@@ -1,36 +1,67 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 📦 Bota Fora do Carlão
 
-## Getting Started
+Uma plataforma moderna e elegante desenvolvida para facilitar a venda de itens de desapego. O sistema conta com um painel administrativo completo, vitrine responsiva e integração com Inteligência Artificial.
 
-First, run the development server:
+## 🚀 Funcionalidades Principais
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+### 🛍️ Vitrine (Frontend)
+- **Design Premium**: Interface limpa, moderna e totalmente responsiva, focada na melhor experiência de visualização dos produtos.
+- **Roteamento Inteligente**: URLs amigáveis baseadas em Slugs (ex: `/products/mesa-gamer`) para melhor SEO e compartilhamento.
+- **Galeria de Imagens**: Visualizador de imagens dinâmico para cada produto.
+- **Fluxo de Reserva**: Modal de checkout intuitivo para reserva ou compra de itens.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 🔐 Painel Administrativo
+- **Gestão de Inventário**: CRUD completo (Criação, Leitura, Atualização e Exclusão) de produtos.
+- **Painel de Pedidos**: Visualização em tempo real dos pedidos realizados com controle de status (Pendente, Pago, Cancelado).
+- **Segurança**: Acesso protegido via Admin Token.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 🤖 Inteligência Artificial (Google Gemini)
+- **Gerador de Descrições**: Integração nativa com a API do Gemini para gerar automaticamente descrições persuasivas e otimizadas para venda a partir do título do produto.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 🖼️ Sistema de Imagens Inteligente
+- **Compressão Automática**: Sistema de processamento de imagem no cliente que redimensiona e comprime fotos pesadas (até 800px) antes do upload, garantindo performance e respeitando os limites do banco de dados (MongoDB).
+- **Fallback de Imagens**: Tratamento robusto para imagens corrompidas ou inexistentes.
 
-## Learn More
+### 🛠️ Tecnologias Utilizadas
+- **Framework**: [Next.js 15+](https://nextjs.org/) (App Router)
+- **Linguagem**: TypeScript
+- **Estilização**: Tailwind CSS & Lucide React (Ícones)
+- **Banco de Dados**: MongoDB (Mongoose)
+- **IA**: Google Generative AI (Gemini Flash)
+- **Email**: Resend (Integração de notificações)
 
-To learn more about Next.js, take a look at the following resources:
+---
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 🛠️ Configuração e Instalação
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+1. **Clonar o repositório:**
+   ```bash
+   git clone <repo-url>
+   ```
 
-## Deploy on Vercel
+2. **Instalar dependências:**
+   ```bash
+   yarn install
+   ```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+3. **Configurar variáveis de ambiente:**
+   Crie um arquivo `.env` na raiz com as seguintes chaves:
+   ```env
+   MONGODB_URI=seu_link_do_mongodb
+   ADMIN_TOKEN=seu_token_de_acesso
+   GEMINI_API_KEY=sua_chave_da_google_ai
+   RESEND_API_KEY=sua_chave_da_resend (opcional)
+   ```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+4. **Rodar em desenvolvimento:**
+   ```bash
+   yarn dev
+   ```
+
+5. **Gerar Build de produção:**
+   ```bash
+   yarn build
+   ```
+
+---
+Desenvolvido com ❤️ para o Bota Fora do Carlão.
