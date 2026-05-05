@@ -4,11 +4,13 @@ import React, { useEffect, useState } from 'react';
 import { ProductCard } from './ProductCard';
 import { MOCK_PRODUCTS } from '@/lib/data';
 
-export function ProductGrid() {
-  const [products, setProducts] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+export function ProductGrid({ initialProducts }: { initialProducts?: any[] }) {
+  const [products, setProducts] = useState<any[]>(initialProducts || []);
+  const [isLoading, setIsLoading] = useState(!initialProducts);
 
   useEffect(() => {
+    if (initialProducts) return;
+
     async function fetchProducts() {
       try {
         const response = await fetch('/api/products');
@@ -18,7 +20,6 @@ export function ProductGrid() {
         if (data && data.length > 0) {
           setProducts(data);
         } else {
-          // Se o banco estiver vazio, usa o mock como fallback
           setProducts(MOCK_PRODUCTS);
         }
       } catch (error) {
@@ -30,7 +31,7 @@ export function ProductGrid() {
     }
 
     fetchProducts();
-  }, []);
+  }, [initialProducts]);
 
   return (
     <div className="w-full py-12">

@@ -1,9 +1,20 @@
-'use client';
-
 import React from 'react';
 import { ProductGrid } from "@/components/ProductGrid";
+import { getProducts } from "@/lib/db";
+import { MOCK_PRODUCTS } from "@/lib/data";
 
-export default function Home() {
+export default async function Home() {
+  let products = [];
+  try {
+    products = await getProducts();
+    if (!products || products.length === 0) {
+      products = MOCK_PRODUCTS;
+    }
+  } catch (error) {
+    console.error("Error fetching products:", error);
+    products = MOCK_PRODUCTS;
+  }
+
   return (
     <div className="min-h-screen bg-white font-sans text-zinc-950">
       {/* Header */}
@@ -39,7 +50,7 @@ export default function Home() {
 
         {/* Product Grid Section */}
         <section id="products">
-          <ProductGrid />
+          <ProductGrid initialProducts={products} />
         </section>
       </main>
 
