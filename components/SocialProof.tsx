@@ -24,6 +24,9 @@ interface Product {
 }
 
 export function SocialProof() {
+  // Feature desabilitada temporariamente a pedido do usuário
+  return null;
+
   const pathname = usePathname();
   const [products, setProducts] = useState<Product[]>([]);
   const [currentToast, setCurrentToast] = useState<{
@@ -33,10 +36,8 @@ export function SocialProof() {
   } | null>(null);
   const [isVisible, setIsVisible] = useState(false);
 
-  // Don't show on admin pages
   if (pathname?.startsWith('/admin')) return null;
 
-  // Fetch products to use in random notifications
   useEffect(() => {
     fetch('/api/products')
       .then(res => res.json())
