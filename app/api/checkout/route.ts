@@ -51,7 +51,7 @@ export async function POST(req: NextRequest) {
 
     // 5. Orquestração de E-mails (Resend)
     const adminEmail = process.env.ADMIN_EMAIL || 'carlosorioli@gmail.com';
-    const fromEmail = process.env.RESEND_FROM_EMAIL || 'Bota Fora <onboarding@resend.dev>';
+    const fromEmail = process.env.RESEND_FROM_EMAIL || '"Bota Fora <emails@mails.convertesites.com.br>"';
     const adminPhoneRaw = process.env.ADMIN_PHONE || '554899999999';
     const adminPhoneClean = adminPhoneRaw.replace(/\D/g, ''); // Garante que só existam números
     const whatsappLink = `https://wa.me/${adminPhoneClean}`;

@@ -30,19 +30,28 @@ export async function POST(req: NextRequest) {
     // Enviar e-mail de notificação
     try {
       if (process.env.RESEND_API_KEY) {
+        const adminEmail = process.env.ADMIN_EMAIL || 'carlosorioli@gmail.com';
+        const fromEmail = process.env.RESEND_FROM_EMAIL || '"Bota Fora <emails@mails.convertesites.com.br>"';
+
         await resend.emails.send({
-          from: 'Bota Fora <onboarding@resend.dev>',
-          to: 'carlosorioli@gmail.com', // E-mail fixo do Carlão (baseado no context) ou configurável
-          subject: `Nova Oferta: ${product.title}`,
+          from: fromEmail,
+          to: adminEmail,
+          subject: `🔔 Nova Oferta: ${product.title}`,
           html: `
-            <h1>Nova Oferta Recebida!</h1>
-            <p><strong>Produto:</strong> ${product.title}</p>
-            <p><strong>Nome:</strong> ${name}</p>
-            <p><strong>Telefone:</strong> ${phone}</p>
-            <p><strong>E-mail:</strong> ${email}</p>
-            <p><strong>Valor da Oferta:</strong> R$ ${Number(amount).toFixed(2)}</p>
-            <br/>
-            <p>Acesse o painel administrativo para aceitar ou recusar.</p>
+            <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
+              <h2 style="color: #333; border-bottom: 2px solid #6366f1; padding-bottom: 10px;">Nova Oferta Recebida!</h2>
+              <p><strong>Produto:</strong> ${product.title}</p>
+              <p><strong>Valor da Oferta:</strong> <span style="font-size: 18px; font-weight: bold; color: #6366f1;">R$ ${Number(amount).toFixed(2)}</span></p>
+              <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
+              <h3 style="color: #555;">Dados do Interessado:</h3>
+              <p><strong>Nome:</strong> ${name}</p>
+              <p><strong>Telefone:</strong> ${phone}</p>
+              <p><strong>E-mail:</strong> ${email}</p>
+              <br/>
+              <p style="background: #f9f9f9; padding: 15px; border-radius: 5px; color: #666; font-size: 14px;">
+                Acesse o painel administrativo para aceitar ou recusar esta proposta.
+              </p>
+            </div>
           `,
         });
       }
