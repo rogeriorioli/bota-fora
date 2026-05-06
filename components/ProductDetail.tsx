@@ -5,21 +5,25 @@ import Link from 'next/link';
 import { ChevronLeft, ShieldCheck, Truck } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { CheckoutModal } from '@/components/CheckoutModal';
+import { OfferModal } from '@/components/OfferModal';
 
 interface ProductDetailProps {
   product: any;
-  initialAction?: boolean;
+  initialAction?: string;
 }
 
 export function ProductDetail({ product, initialAction }: ProductDetailProps) {
   const [activeImage, setActiveImage] = useState<string>(product.images?.[0] || '');
-  const [isModalOpen, setIsModalOpen] = useState(initialAction || false);
+  const [isModalOpen, setIsModalOpen] = useState(initialAction === 'buy' || initialAction === 'reserve');
+  const [isOfferModalOpen, setIsOfferModalOpen] = useState(initialAction === 'offer');
 
   const formatImageSrc = (src: string) => {
     if (!src) return 'https://via.placeholder.com/400';
     if (src.startsWith('http') || src.startsWith('data:')) return src;
     return `data:image/jpeg;base64,${src}`;
   };
+
+  const isAvailable = product.status === 'disponível';
 
   return (
     <div className="min-h-screen bg-white">
@@ -86,16 +90,26 @@ export function ProductDetail({ product, initialAction }: ProductDetailProps) {
             <div className="flex flex-col gap-4">
               <button 
                 onClick={() => setIsModalOpen(true)}
-                className="flex w-full items-center justify-center rounded-2xl bg-zinc-900 py-5 text-lg font-bold text-white transition-all hover:bg-zinc-800 active:scale-[0.98]"
+                disabled={!isAvailable}
+                className="flex w-full items-center justify-center rounded-2xl bg-zinc-900 py-5 text-lg font-bold text-white transition-all hover:bg-zinc-800 active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none"
               >
                 Comprar Agora (100%)
               </button>
               <button 
                 onClick={() => setIsModalOpen(true)}
-                className="flex w-full items-center justify-center rounded-2xl border-2 border-zinc-200 py-5 text-lg font-bold text-zinc-900 transition-all hover:border-zinc-900 active:scale-[0.98]"
+                disabled={!isAvailable}
+                className="flex w-full items-center justify-center rounded-2xl border-2 border-zinc-200 py-5 text-lg font-bold text-zinc-900 transition-all hover:border-zinc-900 active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none"
               >
                 Reservar Item (50%)
               </button>
+              {isAvailable && (
+                <button 
+                  onClick={() => setIsOfferModalOpen(true)}
+                  className="flex w-full items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-zinc-300 py-4 text-sm font-bold text-zinc-500 transition-all hover:border-zinc-900 hover:text-zinc-900 active:scale-[0.98]"
+                >
+                  Ou faça uma oferta personalizada
+                </button>
+              )}
             </div>
 
             {/* Trust Badges */}
@@ -127,6 +141,12 @@ export function ProductDetail({ product, initialAction }: ProductDetailProps) {
         isOpen={isModalOpen} 
         onClose={() => setIsModalOpen(false)} 
         product={product} 
+      />
+
+      <OfferModal 
+        isOpen={isOfferModalOpen}
+        onClose={() => setIsOfferModalOpen(false)}
+        product={product}
       />
     </div>
   );

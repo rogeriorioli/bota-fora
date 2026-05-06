@@ -109,20 +109,28 @@ export function ProductCard({ product }: ProductCardProps) {
       </CardWrapper>
 
       {/* Buttons Section */}
-      <div className="flex gap-2 p-5 pt-0">
+      <div className="flex flex-col gap-2 p-5 pt-0">
         {isAvailable ? (
           <>
+            <div className="flex gap-2">
+              <Link 
+                href={`/products/${product.slug || product.id}?action=buy`}
+                className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-zinc-900 py-3 text-xs font-bold uppercase tracking-tight text-white transition-all hover:bg-zinc-800 active:scale-[0.98]"
+              >
+                Comprar
+              </Link>
+              <Link 
+                href={`/products/${product.slug || product.id}?action=reserve`}
+                className="flex flex-1 items-center justify-center gap-2 rounded-xl border-2 border-zinc-200 bg-white py-3 text-xs font-bold uppercase tracking-tight text-zinc-900 transition-all hover:border-zinc-900 active:scale-[0.98]"
+              >
+                Reservar
+              </Link>
+            </div>
             <Link 
-              href={`/products/${product.id}?action=buy`}
-              className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-zinc-900 py-3 text-xs font-bold uppercase tracking-tight text-white transition-all hover:bg-zinc-800 active:scale-[0.98]"
+              href={`/products/${product.slug || product.id}?action=offer`}
+              className="flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-zinc-300 py-2.5 text-[10px] font-bold uppercase tracking-widest text-zinc-500 transition-all hover:border-zinc-900 hover:text-zinc-900 active:scale-[0.98]"
             >
-              Comprar
-            </Link>
-            <Link 
-              href={`/products/${product.id}?action=reserve`}
-              className="flex flex-1 items-center justify-center gap-2 rounded-xl border-2 border-zinc-200 bg-white py-3 text-xs font-bold uppercase tracking-tight text-zinc-900 transition-all hover:border-zinc-900 active:scale-[0.98]"
-            >
-              Reservar
+              Fazer Oferta
             </Link>
           </>
         ) : (

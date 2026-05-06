@@ -19,7 +19,9 @@ import {
   ArrowLeft,
   Sparkles,
   Edit2,
-  Trash2
+  Trash2,
+  HandCoins,
+  MessageSquare
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { fileToBase64, compressImage } from '@/lib/image-utils';
@@ -34,10 +36,11 @@ export default function AdminPage() {
 
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [token, setToken] = useState('');
-  const [activeTab, setActiveTab] = useState<'orders' | 'products' | 'new-product'>('orders');
+  const [activeTab, setActiveTab] = useState<'orders' | 'products' | 'new-product' | 'offers'>('orders');
   const [isLoading, setIsLoading] = useState(false);
   const [orders, setOrders] = useState<any[]>([]);
   const [products, setProducts] = useState<any[]>([]);
+  const [offers, setOffers] = useState<any[]>([]);
   const [editingProductId, setEditingProductId] = useState<string | null>(null);
   
   const [newProduct, setNewProduct] = useState<{
@@ -45,11 +48,13 @@ export default function AdminPage() {
     price: string;
     description: string;
     images: string[];
+    status: string;
   }>({
     title: '',
     price: '',
     description: '',
-    images: []
+    images: [],
+    status: 'disponível'
   });
 
   // Check for existing token
@@ -65,18 +70,20 @@ export default function AdminPage() {
   const fetchData = async (authToken: string) => {
     setIsLoading(true);
     try {
-      const [ordersRes, productsRes] = await Promise.all([
+      const [ordersRes, productsRes, offersRes] = await Promise.all([
         fetch('/api/admin/orders', { headers: { 'x-admin-token': authToken } }),
-        fetch('/api/products')
+        fetch('/api/products'),
+        fetch('/api/admin/offers', { headers: { 'x-admin-token': authToken } })
       ]);
 
-      if (ordersRes.status === 401) {
+      if (ordersRes.status === 401 || offersRes.status === 401) {
         handleLogout();
         return;
       }
 
       const ordersData = await ordersRes.json();
       const productsData = await productsRes.json();
+      const offersData = await offersRes.json();
       
       // Normalizar imagens para o Admin (fallback imageUrl -> images)
       const normalizedProducts = productsData.map((p: any) => ({
@@ -86,6 +93,7 @@ export default function AdminPage() {
 
       setOrders(ordersData);
       setProducts(normalizedProducts);
+      setOffers(offersData);
     } catch (error) {
       console.error('Fetch error:', error);
     } finally {
@@ -126,7 +134,7 @@ export default function AdminPage() {
       });
 
       if (res.ok) {
-        setNewProduct({ title: '', price: '', description: '', images: [] });
+        setNewProduct({ title: '', price: '', description: '', images: [], status: 'disponível' });
         setEditingProductId(null);
         setActiveTab('products');
         fetchData(token);
@@ -169,10 +177,34 @@ export default function AdminPage() {
       title: product.title,
       price: product.price.toString(),
       description: product.description,
-      images: product.images || []
+      images: product.images || [],
+      status: product.status || 'disponível'
     });
     setEditingProductId(product.id || product._id);
     setActiveTab('new-product');
+  };
+
+  const handleUpdateProductStatus = async (productId: string, newStatus: string) => {
+    if (!confirm(`Confirmar alteração do status para ${newStatus}?`)) return;
+    
+    setIsLoading(true);
+    try {
+      const res = await fetch(`/api/admin/products/${productId}`, {
+        method: 'PATCH',
+        headers: { 
+          'Content-Type': 'application/json',
+          'x-admin-token': token 
+        },
+        body: JSON.stringify({ status: newStatus })
+      });
+      if (res.ok) {
+        fetchData(token);
+      }
+    } catch (error) {
+      alert('Erro ao atualizar status');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleUpdateOrderStatus = async (orderId: string, newStatus: string) => {
@@ -194,6 +226,50 @@ export default function AdminPage() {
       }
     } catch (error) {
       alert('Erro ao atualizar status');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleUpdateOfferStatus = async (offerId: string, newStatus: string) => {
+    if (!confirm(`Confirmar alteração do status para ${newStatus}?`)) return;
+    
+    setIsLoading(true);
+    try {
+      const res = await fetch('/api/admin/offers', {
+        method: 'PATCH',
+        headers: { 
+          'Content-Type': 'application/json',
+          'x-admin-token': token 
+        },
+        body: JSON.stringify({ offerId, newStatus })
+      });
+
+      if (res.ok) {
+        fetchData(token);
+      }
+    } catch (error) {
+      alert('Erro ao atualizar oferta');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleDeleteOffer = async (offerId: string) => {
+    if (!confirm('Tem certeza que deseja excluir esta oferta?')) return;
+    
+    setIsLoading(true);
+    try {
+      const res = await fetch(`/api/admin/offers?id=${offerId}`, {
+        method: 'DELETE',
+        headers: { 'x-admin-token': token }
+      });
+
+      if (res.ok) {
+        fetchData(token);
+      }
+    } catch (error) {
+      alert('Erro ao excluir oferta');
     } finally {
       setIsLoading(false);
     }
@@ -358,9 +434,23 @@ export default function AdminPage() {
             <Package className="h-4 w-4" /> Inventário
           </button>
           <button 
+            onClick={() => setActiveTab('offers')}
+            className={cn(
+              "flex flex-1 items-center justify-center gap-2 rounded-xl py-3 text-sm font-bold transition-all",
+              activeTab === 'offers' ? "bg-white text-zinc-900 shadow-sm" : "text-zinc-500 hover:text-zinc-900"
+            )}
+          >
+            <HandCoins className="h-4 w-4" /> Ofertas
+            {offers.filter(o => o.status === 'pendente').length > 0 && (
+              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-rose-500 text-[10px] text-white">
+                {offers.filter(o => o.status === 'pendente').length}
+              </span>
+            )}
+          </button>
+          <button 
             onClick={() => {
               setEditingProductId(null);
-              setNewProduct({ title: '', price: '', description: '', images: [] });
+              setNewProduct({ title: '', price: '', description: '', images: [], status: 'disponível' });
               setActiveTab('new-product');
             }}
             className={cn(
@@ -474,10 +564,103 @@ export default function AdminPage() {
                         {product.status}
                       </span>
                     </div>
-                    <p className="mt-1 text-sm font-bold text-zinc-900">R$ {product.price.toFixed(2)}</p>
+                    <div className="mt-2 flex items-center justify-between">
+                      <p className="text-sm font-bold text-zinc-900">R$ {product.price.toFixed(2)}</p>
+                      
+                      <div className="flex gap-1">
+                        {product.status === 'vendido' ? (
+                          <button 
+                            onClick={() => handleUpdateProductStatus(product.id || product._id, 'disponível')}
+                            className="flex items-center gap-1 rounded-lg bg-zinc-100 px-2 py-1 text-[10px] font-bold text-zinc-600 hover:bg-zinc-200 transition-all"
+                          >
+                            <ArrowLeft className="h-3 w-3" /> Reativar
+                          </button>
+                        ) : (
+                          <button 
+                            onClick={() => handleUpdateProductStatus(product.id || product._id, 'vendido')}
+                            className="flex items-center gap-1 rounded-lg bg-rose-50 px-2 py-1 text-[10px] font-bold text-rose-600 hover:bg-rose-100 transition-all"
+                          >
+                            <CheckCircle className="h-3 w-3" /> Vender
+                          </button>
+                        )}
+                      </div>
+                    </div>
                   </div>
                 </div>
               ))}
+            </div>
+          )}
+
+          {activeTab === 'offers' && (
+            <div className="space-y-4">
+              {offers.length === 0 ? (
+                <div className="py-20 text-center">
+                  <HandCoins className="mx-auto h-12 w-12 text-zinc-200" />
+                  <p className="mt-4 text-zinc-500">Nenhuma oferta recebida ainda.</p>
+                </div>
+              ) : (
+                offers.map((offer) => {
+                  const product = products.find(p => p.id === offer.productId || p._id === offer.productId);
+                  return (
+                    <div key={offer._id} className="group relative overflow-hidden rounded-3xl bg-white p-6 shadow-sm border border-zinc-100 transition-all hover:shadow-md">
+                      <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+                        <div className="flex items-start gap-4">
+                          <div className="h-16 w-16 shrink-0 overflow-hidden rounded-2xl bg-zinc-100">
+                            {product?.images?.[0] && <img src={formatImageSrc(product.images[0])} className="h-full w-full object-cover" alt="" />}
+                          </div>
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <span className={cn(
+                                "rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider",
+                                offer.status === 'pendente' ? "bg-amber-100 text-amber-800" : 
+                                offer.status === 'aceito' ? "bg-emerald-100 text-emerald-800" : "bg-zinc-100 text-zinc-500"
+                              )}>
+                                {offer.status}
+                              </span>
+                              <span className="text-[10px] text-zinc-500 font-bold uppercase">{new Date(offer.createdAt).toLocaleDateString('pt-BR')}</span>
+                            </div>
+                            <h3 className="mt-1 text-lg font-bold text-zinc-900">
+                              Oferta para: {product?.title || 'Produto Removido'}
+                            </h3>
+                            <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-sm text-zinc-600">
+                              <span className="flex items-center gap-1 font-medium"><User className="h-3 w-3" /> {offer.name}</span>
+                              <span className="flex items-center gap-1 font-medium"><Phone className="h-3 w-3" /> {offer.phone}</span>
+                              <span className="flex items-center gap-1 font-black text-zinc-900 underline decoration-zinc-200 underline-offset-4">
+                                Proposta: R$ {Number(offer.amount).toFixed(2)}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-3 border-t border-zinc-50 pt-6 lg:border-0 lg:pt-0">
+                          {offer.status === 'pendente' && (
+                            <>
+                              <button 
+                                onClick={() => handleUpdateOfferStatus(offer._id, 'aceito')}
+                                className="flex items-center gap-2 rounded-xl bg-zinc-900 px-4 py-2.5 text-xs font-bold text-white hover:bg-zinc-800 transition-all"
+                              >
+                                <CheckCircle className="h-4 w-4" /> Aceitar
+                              </button>
+                              <button 
+                                onClick={() => handleUpdateOfferStatus(offer._id, 'recusado')}
+                                className="flex items-center gap-2 rounded-xl border border-zinc-200 px-4 py-2.5 text-xs font-bold text-zinc-600 hover:border-zinc-900 hover:text-zinc-900 transition-all"
+                              >
+                                <XCircle className="h-4 w-4" /> Recusar
+                              </button>
+                            </>
+                          )}
+                          <button 
+                            onClick={() => handleDeleteOffer(offer._id)}
+                            className="flex items-center gap-2 rounded-xl border border-zinc-100 p-2.5 text-zinc-300 hover:bg-rose-50 hover:text-rose-600 transition-all"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
             </div>
           )}
 
@@ -490,7 +673,7 @@ export default function AdminPage() {
                     onClick={() => {
                       setActiveTab('products');
                       setEditingProductId(null);
-                      setNewProduct({ title: '', price: '', description: '', images: [] });
+                      setNewProduct({ title: '', price: '', description: '', images: [], status: 'disponível' });
                     }}
                     className="flex h-10 w-10 items-center justify-center rounded-full bg-zinc-50 text-zinc-400 hover:text-zinc-900"
                    >
@@ -527,10 +710,16 @@ export default function AdminPage() {
                       />
                     </div>
                     <div>
-                      <label className="text-xs font-bold uppercase tracking-widest text-zinc-700 ml-1">Status Inicial</label>
-                      <div className="mt-2 flex h-[58px] items-center rounded-2xl bg-zinc-50 px-4 text-sm font-bold text-emerald-700">
-                        Disponível
-                      </div>
+                      <label className="text-xs font-bold uppercase tracking-widest text-zinc-700 ml-1">Status</label>
+                      <select
+                        className="mt-2 w-full rounded-2xl border border-zinc-200 bg-zinc-50 p-4 text-sm font-bold text-zinc-900 focus:border-zinc-900 focus:outline-none transition-all appearance-none"
+                        value={newProduct.status}
+                        onChange={e => setNewProduct({...newProduct, status: e.target.value})}
+                      >
+                        <option value="disponível">Disponível</option>
+                        <option value="reservado">Reservado</option>
+                        <option value="vendido">Vendido</option>
+                      </select>
                     </div>
                   </div>
 

@@ -33,7 +33,7 @@ export default async function ProductPage({
     notFound();
   }
 
-  const initialAction = !!sParams.action;
+  const initialAction = sParams.action as string;
 
   return (
     <ProductDetail 
