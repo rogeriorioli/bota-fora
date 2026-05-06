@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import dbConnect from '@/lib/mongodb';
 import Product from '@/models/Product';
 import { validateAdminToken } from '@/lib/auth';
@@ -35,6 +36,7 @@ export async function PATCH(
       return NextResponse.json({ error: 'Produto não encontrado' }, { status: 404 });
     }
 
+    revalidatePath('/');
     return NextResponse.json({ success: true, product: updatedProduct });
   } catch (error: any) {
     console.error('Admin Product PATCH Error:', error);
@@ -60,6 +62,7 @@ export async function DELETE(
       return NextResponse.json({ error: 'Produto não encontrado' }, { status: 404 });
     }
 
+    revalidatePath('/');
     return NextResponse.json({ success: true, message: 'Produto removido com sucesso' });
   } catch (error: any) {
     console.error('Admin Product DELETE Error:', error);

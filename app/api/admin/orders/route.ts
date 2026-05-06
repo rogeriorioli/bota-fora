@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import dbConnect from '@/lib/mongodb';
 import Product from '@/models/Product';
 import Order from '@/models/Order';
@@ -49,6 +50,7 @@ export async function PATCH(req: NextRequest) {
     product.status = newStatus || 'vendido';
     await product.save();
 
+    revalidatePath('/');
     return NextResponse.json({ 
       success: true, 
       message: `Status do produto atualizado para ${product.status}`,

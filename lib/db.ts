@@ -5,7 +5,8 @@ import Product from '@/models/Product';
 export const getProducts = cache(async () => {
   await dbConnect();
   const products = await Product.find({}).sort({ createdAt: -1 }).lean();
-  return products.map((p: any) => ({
+  
+  const mappedProducts = products.map((p: any) => ({
     id: p._id.toString(),
     title: p.title,
     slug: p.slug,
@@ -16,6 +17,26 @@ export const getProducts = cache(async () => {
     createdAt: p.createdAt?.toISOString(),
     updatedAt: p.updatedAt?.toISOString(),
   }));
+
+  // Ordenar: Disponível (1) > Reservado (2) > Vendido (3)
+  // Dentro de cada grupo, mantém a ordem de criação (mais recentes primeiro)
+  const statusPriority: Record<string, number> = {
+    'disponível': 1,
+    'reservado': 2,
+    'vendido': 3
+  };
+
+  return mappedProducts.sort((a: any, b: any) => {
+    const priorityA = statusPriority[a.status] || 99;
+    const priorityB = statusPriority[b.status] || 99;
+    
+    if (priorityA !== priorityB) {
+      return priorityA - priorityB;
+    }
+    
+    // Se tiverem o mesmo status, mantém a ordem de criação (que já veio do banco)
+    return 0; 
+  });
 });
 
 export const getProductBySlug = cache(async (slug: string) => {

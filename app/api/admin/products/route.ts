@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import dbConnect from '@/lib/mongodb';
 import Product from '@/models/Product';
 import { validateAdminToken } from '@/lib/auth';
@@ -32,6 +33,7 @@ export async function POST(req: NextRequest) {
       status: 'disponível',
     });
 
+    revalidatePath('/');
     return NextResponse.json({ success: true, product: newProduct });
   } catch (error: any) {
     console.error('Admin Products POST Error:', error);

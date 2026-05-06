@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import dbConnect from '@/lib/mongodb';
 import Offer from '@/models/Offer';
 import Product from '@/models/Product';
@@ -50,6 +51,7 @@ export async function PATCH(req: NextRequest) {
       }
     }
 
+    revalidatePath('/');
     return NextResponse.json({ success: true, offer });
   } catch (error: any) {
     console.error('Admin Offers PATCH Error:', error);

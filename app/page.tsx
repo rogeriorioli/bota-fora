@@ -3,6 +3,9 @@ import { ProductGrid } from "@/components/ProductGrid";
 import { getProducts } from "@/lib/db";
 import { MOCK_PRODUCTS } from "@/lib/data";
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export default async function Home() {
   let products = [];
   try {
