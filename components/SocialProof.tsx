@@ -24,8 +24,6 @@ interface Product {
 }
 
 export function SocialProof() {
-  // Feature desabilitada temporariamente a pedido do usuário
-  return null;
 
   const pathname = usePathname();
   const [products, setProducts] = useState<Product[]>([]);
@@ -114,6 +112,9 @@ export function SocialProof() {
 
   if (!currentToast) return null;
 
+  const Icon = currentToast.icon;
+  const message = currentToast.message;
+
   return (
     <div 
       className={cn(
@@ -123,10 +124,10 @@ export function SocialProof() {
     >
       <div className="flex items-center gap-4 rounded-2xl bg-white p-4 shadow-2xl shadow-zinc-200 border border-zinc-100">
         <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-zinc-900 text-white">
-          <currentToast.icon className="h-5 w-5" />
+          <Icon className="h-5 w-5" />
         </div>
         <div className="flex-1 pr-2">
-          {currentToast.message}
+          {message}
         </div>
         <button 
           onClick={() => setIsVisible(false)}
